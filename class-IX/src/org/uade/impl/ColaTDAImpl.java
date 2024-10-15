@@ -5,7 +5,6 @@ import org.uade.api.ColaTDA;
 public class ColaTDAImpl implements ColaTDA {
 
 
-
     // Inicializamos la cola con un tamaño fijo de 100 elementos
     @Override
     public void inicializarCola() {
@@ -26,7 +25,7 @@ public class ColaTDAImpl implements ColaTDA {
     // Devolvemos el primer elemento de la cola
     @Override
     public int primero() {
-        return 0;
+    	return 0;
     }
 
     // Verificamos si la cola está vacía

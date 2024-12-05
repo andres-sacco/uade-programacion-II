@@ -1,14 +1,17 @@
 package org.uade.app;
 
 import org.uade.api.ConjuntoTDA;
+import org.uade.api.DiccionarioSimpleTDA;
 import org.uade.api.GrafoTDA;
-import org.uade.impl.ConjuntoTDAImpl;
+import org.uade.impl.DiccionarioSimpleTDAImpl;
 import org.uade.impl.GrafoTDAImpl;
-import org.uade.operacion.OperacionConjunto;
 import org.uade.operacion.OperacionGrafo;
 
 /*
-Dado un nodo implementar un metodo que devuelva los adyacentes
+Dado un diccionario simple se lo quiere cconvertir en un grafo considerando:
+- Las claves representan a los vertices
+- Los valores son con que vertices se conectan
+- Todas las aristas tienen un valor de 1
 */
 public class EjercicioCuatro {
 
@@ -18,49 +21,45 @@ public class EjercicioCuatro {
     }
 
     private void execute() {
+        DiccionarioSimpleTDA diccionario = new DiccionarioSimpleTDAImpl();
+        diccionario.inicializarDiccionario();
+        diccionario.agregar(1, 2); // Clave 1 se conecta con 2
+        diccionario.agregar(1, 3); // Clave 1 se conecta con 3
+        diccionario.agregar(2, 3); // Clave 2 se conecta con 3
+
+        GrafoTDA grafo = convertirDiccionarioAGrafo(diccionario);
+
+        // Imprimir los vértices y aristas del grafo
+        OperacionGrafo operacion = new OperacionGrafo();
+        operacion.mostrarGrafo(grafo);
+    }
+
+
+    // Metodo que convierte un Diccionario Simple en un Grafo
+    public GrafoTDA convertirDiccionarioAGrafo(DiccionarioSimpleTDA diccionario) {
         GrafoTDA grafo = new GrafoTDAImpl();
         grafo.inicializarGrafo();
 
-        // Agregar los vértices
-        grafo.agregarVertice(0);
-        grafo.agregarVertice(1);
-        grafo.agregarVertice(2);
-        grafo.agregarVertice(3);
-        grafo.agregarVertice(4);
-        grafo.agregarVertice(5);
+        // Recorrer todas las claves del diccionario
+        ConjuntoTDA claves = diccionario.claves();
+        while (!claves.conjuntoVacio()) {
+            int clave = claves.elegir();
+            claves.sacar(clave);
 
-        // Agregar las aristas
-        grafo.agregarArista(0, 1, 1);  // Peso 1 (peso uniforme)
-        grafo.agregarArista(0, 3, 1);
-        grafo.agregarArista(1, 2, 1);
-        grafo.agregarArista(1, 4, 1);
-        grafo.agregarArista(3, 4, 2);
-        grafo.agregarArista(4, 5, 10);
+            // Agregar el vértice correspondiente a la clave
+            grafo.agregarVertice(clave);
 
-        ConjuntoTDA adyacentes = obtenerAdyacentes(grafo, 1);
+            // Obtener el valor (único vértice al que está conectada la clave)
+            int verticeConectado = diccionario.recuperar(clave);
 
-        OperacionConjunto op = new OperacionConjunto();
-        op.mostrarConjunto(adyacentes);
+            // Agregar el vértice al grafo si no está agregado ya
+            grafo.agregarVertice(verticeConectado);
 
-    }
-
-    private static ConjuntoTDA obtenerAdyacentes(GrafoTDA grafo, int vertice) {
-        ConjuntoTDA adyacentes = new ConjuntoTDAImpl(); // Suponemos que Conjunto es una implementación de ConjuntoTDA
-        adyacentes.inicializarConjunto();
-
-        ConjuntoTDA vertices = grafo.vertices();
-        OperacionConjunto operador = new OperacionConjunto();
-        ConjuntoTDA copiaVertices = operador.copiarConjunto(vertices);
-
-        while (!copiaVertices.conjuntoVacio()) {
-            int destino = copiaVertices.elegir();
-            copiaVertices.sacar(destino);
-            if (grafo.existeArista(vertice, destino)) {
-                adyacentes.agregar(destino);
-            }
+            // Agregar una arista entre la clave y el vértice conectado con peso 1
+            grafo.agregarArista(clave, verticeConectado, 1);
         }
 
-        return adyacentes;
+        return grafo;
     }
 
 }

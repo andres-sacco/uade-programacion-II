@@ -2,11 +2,12 @@ package org.uade.app;
 
 import org.uade.api.ConjuntoTDA;
 import org.uade.api.GrafoTDA;
+import org.uade.impl.ConjuntoTDAImpl;
 import org.uade.impl.GrafoTDAImpl;
-import org.uade.operacion.OperacionConjunto;
 
 /*
-Dado un grafo queremos un metodo que nos permita mostrar el contenido
+Dado un GrafoTDA y un nodo raíz, verifica si existe un camino que siga una estructura de árbol
+Implementar un metodo que recorra el grafo y determine si es posible encontrar dicha estructura de camino.
 */
 public class EjercicioDos {
 
@@ -19,57 +20,65 @@ public class EjercicioDos {
         GrafoTDA grafo = new GrafoTDAImpl();
         grafo.inicializarGrafo();
 
-        // Agregar los vértices
-        grafo.agregarVertice(0);
         grafo.agregarVertice(1);
         grafo.agregarVertice(2);
         grafo.agregarVertice(3);
         grafo.agregarVertice(4);
-        grafo.agregarVertice(5);
 
-        // Agregar las aristas
-        grafo.agregarArista(0, 1, 5);
-        grafo.agregarArista(0, 3, 1);
-        grafo.agregarArista(1, 2, 8);
-        grafo.agregarArista(1, 4, 9);
-        grafo.agregarArista(3, 4, 3);
-        grafo.agregarArista(4, 5, 2);
+        grafo.agregarArista(1, 2, 1);
+        grafo.agregarArista(1, 3, 1);
+        grafo.agregarArista(3, 4, 1);
 
-        mostrarGrafo(grafo);
+        System.out.println("¿El grafo contiene una estructura de árbol?: " + esEstructuraArbol(grafo, 1)); // true
 
+        grafo.agregarArista(2, 4, 1); // Crear un ciclo
+        System.out.println("¿El grafo contiene una estructura de árbol?: " + esEstructuraArbol(grafo, 1)); // false
     }
 
-    public static void mostrarGrafo(GrafoTDA grafo) {
-        OperacionConjunto op = new OperacionConjunto();
+    public boolean esEstructuraArbol(GrafoTDA grafo, int raiz) {
+        ConjuntoTDA visitados = new ConjuntoTDAImpl();
+        visitados.inicializarConjunto();
+
+        if (!esArbolDFS(grafo, raiz, -1, visitados)) {
+            return false;
+        }
+
+        // Verificar que todos los vértices sean alcanzables desde la raíz
         ConjuntoTDA vertices = grafo.vertices();
-        ConjuntoTDA copiaVertices = op.copiarConjunto(vertices); // Copia para preservar el original
+        while (!vertices.conjuntoVacio()) {
+            int vertice = vertices.elegir();
+            vertices.sacar(vertice);
+            if (!visitados.pertenece(vertice)) {
+                return false; // Hay nodos desconectados
+            }
+        }
 
-        System.out.println("Grafo:");
-        while (!copiaVertices.conjuntoVacio()) {
-            int vertice = copiaVertices.elegir();
-            copiaVertices.sacar(vertice);
+        return true;
+    }
 
-            // Imprimir el vértice y sus aristas de salida
-            System.out.print("Vertice " + vertice + " -> ");
-            ConjuntoTDA adyacentes = grafo.vertices();  // Para explorar conexiones con otros vértices
-            ConjuntoTDA copiaAdyacentes = op.copiarConjunto(adyacentes);
+    private boolean esArbolDFS(GrafoTDA grafo, int actual, int padre, ConjuntoTDA visitados) {
+        if (visitados.pertenece(actual)) {
+            return false; // Encontramos un ciclo
+        }
 
-            boolean tieneAristas = false;
-            while (!copiaAdyacentes.conjuntoVacio()) {
-                int destino = copiaAdyacentes.elegir();
-                copiaAdyacentes.sacar(destino);
+        visitados.agregar(actual);
 
-                if (grafo.existeArista(vertice, destino)) {
-                    System.out.print(destino + "(peso: " + grafo.pesoArista(vertice, destino) + ") ");
-                    tieneAristas = true;
+        ConjuntoTDA vertices = grafo.vertices();
+        while (!vertices.conjuntoVacio()) {
+            int vecino = vertices.elegir();
+            vertices.sacar(vecino);
+
+            if (grafo.existeArista(actual, vecino)) {
+                // Evitar volver al nodo padre en un grafo no dirigido
+                if (vecino != padre && !esArbolDFS(grafo, vecino, actual, visitados)) {
+                    return false; // El subgrafo no es un árbol
                 }
             }
-
-            if (!tieneAristas) {
-                System.out.print("sin aristas de salida");
-            }
-            System.out.println();
         }
+
+        return true;
     }
+
+
 
 }

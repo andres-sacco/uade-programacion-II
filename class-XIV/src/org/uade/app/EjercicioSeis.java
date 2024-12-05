@@ -6,10 +6,10 @@ import org.uade.impl.GrafoTDAImpl;
 /*
 
 */
-public class EjercicioCinco {
+public class EjercicioSeis {
 
     public static void main(String[] args) {
-        EjercicioCinco app = new EjercicioCinco();
+        EjercicioSeis app = new EjercicioSeis();
         app.execute();
     }
 
